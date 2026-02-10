@@ -45,7 +45,7 @@ void vga_clear(void)
 	set_cursor(0, 0);
 
 	for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++)
-		vga[i] = (BRIGHT_WHITE << 8) | ' ';
+		__vga[i] = (BRIGHT_WHITE << 8) | ' ';
 
 	set_cursor(0, 0);
 }
