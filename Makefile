@@ -20,7 +20,11 @@ LD_FLAGS	:= -m elf_i386 -T $(LINKER)
 NASM_FLAGS	:= -f elf32
 
 # ====== Sources ======
-OBJS		:= $(OBJDIR)/boot.o $(OBJDIR)/kernel.o $(OBJDIR)/vga.o
+C_SRCS		:= $(shell find kernel -type f -name '*.c')
+ASM_SRCS	:= $(shell find asm -type f -name '*.asm')
+C_OBJS 		:= $(patsubst %.c,$(OBJDIR)/%.o,$(C_SRCS))
+ASM_OBJS 	:= $(patsubst %.asm,$(OBJDIR)/%.o,$(ASM_SRCS))
+OBJS		:= $(C_OBJS) $(ASM_OBJS)
 
 
 all: $(ISO_NAME)
@@ -31,14 +35,13 @@ $(OBJDIR):
 $(BUILD):
 	@mkdir -p $(BUILD)
 
-$(OBJDIR)/boot.o: boot/boot.asm | $(OBJDIR)
+$(OBJDIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(GCC) $(GCC_FLAGS) -c $< -o $@
+
+$(OBJDIR)/%.o: %.asm
+	@mkdir -p $(dir $@)
 	$(NASM) $(NASM_FLAGS) $< -o $@
-
-$(OBJDIR)/kernel.o: kernel/kernel.c | $(OBJDIR)
-	$(GCC) $(GCC_FLAGS) -c $< -o $@
-
-$(OBJDIR)/vga.o: kernel/vga.c | $(OBJDIR)
-	$(GCC) $(GCC_FLAGS) -c $< -o $@
 
 $(KERNEL_ELF): $(OBJS) $(LINKER) | $(BUILD)
 	@mkdir -p $(ISODIR)/boot
